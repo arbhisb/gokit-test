@@ -53,5 +53,5 @@ func (s *service) Cda(ctx context.Context) (interface{}, error) {
 	}
 
 	fmt.Println("transaction mybb : ", transactionEcv)
-	return "success", nil
+	return transactionEcv, nil
 }

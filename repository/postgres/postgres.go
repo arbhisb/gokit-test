@@ -98,7 +98,7 @@ func (p *postgres) GetTransaction2(ctx context.Context) (result []repository.Tra
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
-	sql := "select id,offer_id,quote_id from lul where id=18"
+	sql := "select id,offer_id,quote_id from lul where id IN (18,19)"
 
 	row, err := p.db.Query(sql)
 	if err != nil {
@@ -112,7 +112,7 @@ func (p *postgres) GetTransaction2(ctx context.Context) (result []repository.Tra
 
 	var data repository.Transaction
 	for row.Next() {
-		err := row.Scan(&data)
+		err := row.Scan(&data.Id, &data.Offer_id, &data.Quote_id)
 		if err != nil {
 			return nil, fmt.Errorf("row scan: %v", err)
 		}

@@ -2,11 +2,13 @@ package transport
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/go-kit/kit/log"
 	gt "github.com/go-kit/kit/transport/grpc"
 	"github.com/junereycasuga/gokit-grpc-demo/endpoints"
 	"github.com/junereycasuga/gokit-grpc-demo/pb"
+	"github.com/junereycasuga/gokit-grpc-demo/repository"
 )
 
 type gRPCServer struct {
@@ -43,7 +45,7 @@ func NewGRPCServer(endpoints endpoints.Endpoints, logger log.Logger) pb.MathServ
 		cda: gt.NewServer(
 			endpoints.Cda,
 			decodeMathRequest,
-			encodeMathResponse,
+			encodeOtherResponse,
 		),
 	}
 }
@@ -72,12 +74,12 @@ func (s *gRPCServer) Multiply(ctx context.Context, req *pb.MathRequest) (*pb.Mat
 	return resp.(*pb.MathResponse), nil
 }
 
-func (s *gRPCServer) Cda(ctx context.Context, req *pb.MathRequest) (*pb.MathResponse, error) {
+func (s *gRPCServer) Cda(ctx context.Context, req *pb.MathRequest) (*pb.OtherResponse, error) {
 	_, resp, err := s.cda.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return resp.(*pb.MathResponse), nil
+	return resp.(*pb.OtherResponse), nil
 }
 
 func (s *gRPCServer) Divide(ctx context.Context, req *pb.MathRequest) (*pb.MathResponse, error) {
@@ -103,5 +105,25 @@ func decodeOtherRequest(_ context.Context, request interface{}) (interface{}, er
 }
 
 func encodeOtherResponse(_ context.Context, response interface{}) (interface{}, error) {
-	return &pb.OtherResponse{Data: "dummy"}, nil
+	resp := response.(endpoints.OtherResp)
+	// var jsonData, _ = json.Marshal(resp.Result)
+	// var buf bytes.Buffer
+	// enc := gob.NewEncoder(&buf)
+	// err := enc.Encode(resp.Result)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	var transforms []*pb.DataDb
+	s := reflect.ValueOf(resp.Result)
+
+	for i := 0; i < s.Len(); i++ {
+		var row pb.DataDb
+		curentData := s.Index(i).Interface().(repository.Transaction)
+		row.Id = curentData.Id
+		row.OfferId = curentData.Offer_id
+		row.QuoteId = curentData.Quote_id
+		transforms = append(transforms, &row)
+	}
+	// json.Unmarshal(buf.Bytes(), &transforms)
+	return &pb.OtherResponse{Data: transforms}, nil
 }

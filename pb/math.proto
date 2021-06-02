@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+import "google/protobuf/any.proto";
 option go_package = "github.com/junereycasuga/gokit-grpc-demo/pb";
 
 
@@ -8,7 +8,7 @@ service MathService {
   rpc Subtract(MathRequest) returns (MathResponse) {}
   rpc Multiply(MathRequest) returns (MathResponse) {}
   rpc Divide(MathRequest) returns (MathResponse) {}
-  rpc Cda(MathRequest) returns (MathResponse) {}
+  rpc Cda(MathRequest) returns (OtherResponse) {}
 }
 
 message MathRequest {
@@ -25,6 +25,11 @@ message OtherRequest {
 }
 
 message OtherResponse {
-  string Data = 1;
+  repeated DataDb Data = 1;
 }
 
+message DataDb{
+  string Id = 1;
+  string Offer_id =2;
+  string Quote_id = 3;
+}
